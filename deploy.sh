@@ -11,7 +11,7 @@ fi
 
 # 检查网络连接
 echo "检查网络连接..."
-if ! ping -c 1 mirror.ccs.tencentyun.com > /dev/null 2>&1; then
+if ! ping -c 1 registry.cn-hangzhou.aliyuncs.com > /dev/null 2>&1; then
     echo "警告: 无法连接到镜像源，请检查网络连接"
     echo "尝试使用本地构建..."
 fi
@@ -31,6 +31,10 @@ fi
 # 拉取最新代码
 echo "Pulling latest code..."
 git pull
+
+# 清理 Docker 缓存
+echo "清理 Docker 缓存..."
+docker system prune -f
 
 # 构建并启动服务
 echo "Building and starting services..."

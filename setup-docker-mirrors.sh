@@ -25,11 +25,12 @@ echo "配置 Docker 镜像源..."
 cat > /etc/docker/daemon.json << 'EOF'
 {
   "registry-mirrors": [
-    "https://mirror.ccs.tencentyun.com",
-    "https://hub-mirror.c.163.com",
-    "https://mirror.baidubce.com",
-    "https://docker.mirrors.ustc.edu.cn"
-  ]
+    "https://registry.cn-hangzhou.aliyuncs.com",
+    "https://dockerhub.azk8s.cn",
+    "https://reg-mirror.qiniu.com",
+    "https://hub-mirror.c.163.com"
+  ],
+  "dns": ["8.8.8.8", "114.114.114.114"]
 }
 EOF
 
