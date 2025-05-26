@@ -1,0 +1,17 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install Node.js dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy application code
+COPY . .
+
+# Create a non-root user
+RUN adduser -D appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Command will be overridden by docker-compose
+CMD ["npm", "run", "dev"] 

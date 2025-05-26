@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+      - /app/.coverage
+      - /app/htmlcov
+      - /app/.ruff_cache
+      - /app/.mypy_cache
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - PYTHONPATH=/app
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "while true; do
+        git pull;
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload;
+        sleep 30;
+      done"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    command: >
+      sh -c "while true; do
+        git pull;
+        npm run dev;
+        sleep 30;
+      done"
+
+  git-monitor:
+    image: alpine/git
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    command: >
+      sh -c "while true; do
+        git fetch;
+        if [ $(git rev-parse HEAD) != $(git rev-parse @{u}) ]; then
+          echo 'Changes detected in repository';
+          git pull;
+          touch /workspace/.git-update;
+        fi;
+        sleep 30;
+      done" 
