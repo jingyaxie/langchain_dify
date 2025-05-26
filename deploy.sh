@@ -9,6 +9,13 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
+# 检查网络连接
+echo "检查网络连接..."
+if ! ping -c 1 mirror.ccs.tencentyun.com > /dev/null 2>&1; then
+    echo "警告: 无法连接到镜像源，请检查网络连接"
+    echo "尝试使用本地构建..."
+fi
+
 # 创建必要的目录
 mkdir -p nginx/ssl nginx/logs
 
@@ -27,7 +34,23 @@ git pull
 
 # 构建并启动服务
 echo "Building and starting services..."
-docker-compose -f docker-compose.prod.yml up --build -d
+max_retries=3
+retry_count=0
+
+while [ $retry_count -lt $max_retries ]; do
+    if docker-compose -f docker-compose.prod.yml up --build -d; then
+        break
+    else
+        retry_count=$((retry_count + 1))
+        if [ $retry_count -lt $max_retries ]; then
+            echo "构建失败，正在重试 ($retry_count/$max_retries)..."
+            sleep 5
+        else
+            echo "构建失败，已达到最大重试次数"
+            exit 1
+        fi
+    fi
+done
 
 # 等待服务启动
 echo "Waiting for services to start..."
