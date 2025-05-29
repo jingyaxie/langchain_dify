@@ -101,7 +101,7 @@ export class ApiClient {
         await this.rateLimiter.waitForSlot();
 
         // 添加认证头
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('authToken');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -117,7 +117,7 @@ export class ApiClient {
       (error) => {
         if (error.response?.status === 401) {
           // 处理未认证错误
-          localStorage.removeItem('auth_token');
+          localStorage.removeItem('authToken');
           window.location.href = '/login';
         }
         return Promise.reject(error);

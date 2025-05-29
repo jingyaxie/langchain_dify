@@ -1,14 +1,14 @@
 import React from 'react';
-import { Box } from '@chakra-ui/react';
-import { KnowledgeManager } from '../components/KnowledgeManager';
+import KnowledgeManager from '../components/KnowledgeManager';
+import { Layout } from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const Home: React.FC = () => {
   return (
     <ProtectedRoute>
-      <Box>
+      <Layout title="LangChain Dify - 知识库管理">
         <KnowledgeManager />
-      </Box>
+      </Layout>
     </ProtectedRoute>
   );
 };

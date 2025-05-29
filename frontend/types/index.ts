@@ -126,18 +126,18 @@ export interface ChatResponse {
 
 // 文档块类型
 export interface DocumentChunk {
-  id: string;
-  document_id: string;
+  id: string | number;
   content: string;
   metadata: {
-    page?: number;
-    section?: string;
+    filename?: string;
+    chunk_index?: number;
+    total_chunks?: number;
     source?: string;
     [key: string]: any;
   };
-  embedding?: number[];
-  created_at: string;
-  updated_at: string;
+  chunk_index: number;
+  word_count: number;
+  char_count: number;
 }
 
 // 搜索结果类型
@@ -202,10 +202,10 @@ export interface IndexingProgressResponse {
 export interface User {
   id: string;
   username: string;
-  email: string;
-  role: 'admin' | 'user';
-  created_at: string;
-  updated_at: string;
+  email?: string;
+  role?: 'admin' | 'user';
+  created_at?: string;
+  updated_at?: string;
 }
 
 // 知识库权限类型
@@ -220,7 +220,8 @@ export interface KnowledgeBasePermission {
 
 // 认证响应类型
 export interface AuthResponse {
-  token: string;
+  access_token: string;
+  token_type: string;
   user: User;
 }
 

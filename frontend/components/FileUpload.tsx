@@ -36,7 +36,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
     setIsUploading(true);
     try {
-      await knowledgeApi.uploadDocument(file, collectionName);
+      await knowledgeApi.uploadDocument({
+        knowledge_base_id: collectionName,
+        file: file,
+      });
       toast({
         title: 'Success',
         description: 'File uploaded successfully',

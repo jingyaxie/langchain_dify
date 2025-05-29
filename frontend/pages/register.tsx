@@ -10,9 +10,15 @@ import {
   Text,
   useToast,
   Link,
+  Container,
+  useColorModeValue,
+  HStack,
+  Icon,
+  Divider,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { authApi } from '../services/auth';
+import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -23,8 +29,32 @@ const Register: React.FC = () => {
   const toast = useToast();
   const router = useRouter();
 
+  const bg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!username || !password) {
+      toast({
+        title: '请填写必要信息',
+        description: '用户名和密码不能为空',
+        status: 'error',
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: '密码太短',
+        description: '密码长度至少6个字符',
+        status: 'error',
+        duration: 5000,
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast({
         title: '密码不匹配',
@@ -40,11 +70,12 @@ const Register: React.FC = () => {
       await authApi.register({ username, email, password });
       toast({
         title: '注册成功',
-        description: '请登录以继续',
+        description: '已自动登录，正在跳转...',
         status: 'success',
-        duration: 5000,
+        duration: 3000,
       });
-      router.push('/login');
+      // 注册成功后直接跳转到主页（因为注册API会自动设置token）
+      router.push('/');
     } catch (error) {
       toast({
         title: '注册失败',
@@ -58,62 +89,168 @@ const Register: React.FC = () => {
   };
 
   return (
-    <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Box w="400px" p={8} borderWidth={1} borderRadius={8} boxShadow="lg">
-        <VStack spacing={4} align="stretch">
-          <Heading textAlign="center">注册</Heading>
-          <form onSubmit={handleRegister}>
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>用户名</FormLabel>
-                <Input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>邮箱</FormLabel>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>密码</FormLabel>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>确认密码</FormLabel>
-                <Input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </FormControl>
-              <Button
-                type="submit"
-                colorScheme="blue"
-                width="100%"
-                isLoading={loading}
+    <Box 
+      minH="100vh" 
+      bgGradient="linear(to-br, brand.50, blue.50)" 
+      display="flex" 
+      alignItems="center" 
+      justifyContent="center"
+      py={12}
+      px={4}
+    >
+      <Container maxW="sm">
+        <Box
+          bg={bg}
+          p={8}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="2xl"
+          boxShadow="2xl"
+          className="fade-in"
+        >
+          <VStack spacing={6} align="stretch">
+            {/* Header */}
+            <VStack spacing={2}>
+              <Heading 
+                size="lg" 
+                textAlign="center"
+                bgGradient="linear(to-r, brand.400, brand.600)"
+                bgClip="text"
               >
-                注册
-              </Button>
+                创建账号
+              </Heading>
+              <Text color="gray.600" textAlign="center">
+                加入 LangChain Dify
+              </Text>
             </VStack>
-          </form>
-          <Text textAlign="center">
-            已有账号？{' '}
-            <Link color="blue.500" href="/login">
-              登录
-            </Link>
+
+            <Divider />
+
+            {/* Register Form */}
+            <form onSubmit={handleRegister}>
+              <VStack spacing={5}>
+                <FormControl isRequired>
+                  <FormLabel color="gray.700">用户名</FormLabel>
+                  <HStack>
+                    <Icon as={FiUser} color="gray.400" />
+                    <Input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="请输入用户名"
+                      size="lg"
+                      borderRadius="lg"
+                      _focus={{
+                        borderColor: 'brand.400',
+                        boxShadow: '0 0 0 1px var(--chakra-colors-brand-400)',
+                      }}
+                    />
+                  </HStack>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel color="gray.700">邮箱 (可选)</FormLabel>
+                  <HStack>
+                    <Icon as={FiMail} color="gray.400" />
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="请输入邮箱地址"
+                      size="lg"
+                      borderRadius="lg"
+                      _focus={{
+                        borderColor: 'brand.400',
+                        boxShadow: '0 0 0 1px var(--chakra-colors-brand-400)',
+                      }}
+                    />
+                  </HStack>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel color="gray.700">密码</FormLabel>
+                  <HStack>
+                    <Icon as={FiLock} color="gray.400" />
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="请输入密码 (至少6位)"
+                      size="lg"
+                      borderRadius="lg"
+                      _focus={{
+                        borderColor: 'brand.400',
+                        boxShadow: '0 0 0 1px var(--chakra-colors-brand-400)',
+                      }}
+                    />
+                  </HStack>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel color="gray.700">确认密码</FormLabel>
+                  <HStack>
+                    <Icon as={FiLock} color="gray.400" />
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="请再次输入密码"
+                      size="lg"
+                      borderRadius="lg"
+                      _focus={{
+                        borderColor: 'brand.400',
+                        boxShadow: '0 0 0 1px var(--chakra-colors-brand-400)',
+                      }}
+                    />
+                  </HStack>
+                </FormControl>
+
+                <Button
+                  type="submit"
+                  colorScheme="brand"
+                  size="lg"
+                  width="100%"
+                  isLoading={loading}
+                  loadingText="注册中..."
+                  borderRadius="lg"
+                  _hover={{
+                    transform: 'translateY(-1px)',
+                    boxShadow: 'lg',
+                  }}
+                  transition="all 0.2s"
+                >
+                  注册账号
+                </Button>
+              </VStack>
+            </form>
+
+            <Divider />
+
+            {/* Footer */}
+            <Text textAlign="center" color="gray.600">
+              已有账号？{' '}
+              <Link 
+                color="brand.500" 
+                href="/login"
+                fontWeight="semibold"
+                _hover={{
+                  color: 'brand.600',
+                  textDecoration: 'none',
+                }}
+              >
+                立即登录
+              </Link>
+            </Text>
+          </VStack>
+        </Box>
+
+        {/* Demo Info */}
+        <Box mt={6} p={4} bg="blue.50" borderRadius="lg" textAlign="center">
+          <Text fontSize="sm" color="blue.700">
+            💡 演示环境：注册后将自动登录并跳转到主页
           </Text>
-        </VStack>
-      </Box>
+        </Box>
+      </Container>
     </Box>
   );
 };

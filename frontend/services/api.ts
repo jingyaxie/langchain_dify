@@ -12,7 +12,7 @@ const api = axios.create({
 
 // 添加请求拦截器，处理认证
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -25,7 +25,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // 处理未认证错误
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -154,26 +154,26 @@ export const chatApi = {
 export const knowledgeApi = {
   // 知识库管理
   listKnowledgeBases: () => 
-    api.get<ApiResponse<KnowledgeBaseListResponse>>('/api/knowledge-bases'),
+    api.get<ApiResponse<KnowledgeBaseListResponse>>('/api/knowledge/bases'),
   
   getKnowledgeBase: (id: string) =>
-    api.get<ApiResponse<KnowledgeBase>>(`/api/knowledge-bases/${id}`),
+    api.get<ApiResponse<KnowledgeBase>>(`/api/knowledge/bases/${id}`),
   
   createKnowledgeBase: (params: CreateKnowledgeBaseParams) =>
-    api.post<ApiResponse<KnowledgeBase>>('/api/knowledge-bases', params),
+    api.post<ApiResponse<KnowledgeBase>>('/api/knowledge/bases', params),
   
   updateKnowledgeBase: (id: string, params: Partial<CreateKnowledgeBaseParams>) =>
-    api.put<ApiResponse<KnowledgeBase>>(`/api/knowledge-bases/${id}`, params),
+    api.put<ApiResponse<KnowledgeBase>>(`/api/knowledge/bases/${id}`, params),
   
   deleteKnowledgeBase: (id: string) =>
-    api.delete<ApiResponse<void>>(`/api/knowledge-bases/${id}`),
+    api.delete<ApiResponse<void>>(`/api/knowledge/bases/${id}`),
 
   // 文档管理
   listDocuments: (knowledgeBaseId: string) =>
-    api.get<ApiResponse<DocumentListResponse>>(`/api/knowledge-bases/${knowledgeBaseId}/documents`),
+    api.get<ApiResponse<DocumentListResponse>>(`/api/knowledge/bases/${knowledgeBaseId}/documents`),
   
   getDocument: (knowledgeBaseId: string, documentId: string) =>
-    api.get<ApiResponse<Document>>(`/api/knowledge-bases/${knowledgeBaseId}/documents/${documentId}`),
+    api.get<ApiResponse<Document>>(`/api/knowledge/bases/${knowledgeBaseId}/documents/${documentId}`),
   
   uploadDocument: (params: UploadDocumentParams) => {
     const formData = new FormData();
@@ -182,7 +182,7 @@ export const knowledgeApi = {
       formData.append('tags', JSON.stringify(params.tags));
     }
     return api.post<ApiResponse<Document>>(
-      `/api/knowledge-bases/${params.knowledge_base_id}/documents`,
+      `/api/knowledge/bases/${params.knowledge_base_id}/documents`,
       formData,
       {
         headers: {
@@ -193,46 +193,46 @@ export const knowledgeApi = {
   },
   
   deleteDocument: (knowledgeBaseId: string, documentId: string) =>
-    api.delete<ApiResponse<void>>(`/api/knowledge-bases/${knowledgeBaseId}/documents/${documentId}`),
+    api.delete<ApiResponse<void>>(`/api/knowledge/bases/${knowledgeBaseId}/documents/${documentId}`),
   
   updateDocument: (knowledgeBaseId: string, documentId: string, updates: Partial<Document>) =>
     api.put<ApiResponse<Document>>(
-      `/api/knowledge-bases/${knowledgeBaseId}/documents/${documentId}`,
+      `/api/knowledge/bases/${knowledgeBaseId}/documents/${documentId}`,
       updates
     ),
 
   // 文档块管理
   listDocumentChunks: (knowledgeBaseId: string, documentId: string) =>
     api.get<ApiResponse<{ chunks: DocumentChunk[] }>>(
-      `/api/knowledge-bases/${knowledgeBaseId}/documents/${documentId}/chunks`
+      `/api/knowledge/bases/${knowledgeBaseId}/documents/${documentId}/chunks`
     ),
 
   // 搜索
   search: (params: SearchParams) =>
-    api.post<ApiResponse<{ results: SearchResult[] }>>('/api/knowledge-bases/search', params),
+    api.post<ApiResponse<{ results: SearchResult[] }>>('/api/knowledge/bases/search', params),
 
   // 索引进度
   getIndexingProgress: (knowledgeBaseId: string) =>
-    api.get<ApiResponse<IndexingProgressResponse>>(`/api/knowledge-bases/${knowledgeBaseId}/indexing-progress`),
+    api.get<ApiResponse<IndexingProgressResponse>>(`/api/knowledge/bases/${knowledgeBaseId}/indexing-progress`),
 
   // 权限管理
   listSharedUsers: (knowledgeBaseId: string) =>
-    api.get<ApiResponse<SharedUserListResponse>>(`/api/knowledge-bases/${knowledgeBaseId}/shared-users`),
+    api.get<ApiResponse<SharedUserListResponse>>(`/api/knowledge/bases/${knowledgeBaseId}/shared-users`),
   
   shareKnowledgeBase: (knowledgeBaseId: string, userId: string, permission: string) =>
     api.post<ApiResponse<KnowledgeBasePermission>>(
-      `/api/knowledge-bases/${knowledgeBaseId}/share`,
+      `/api/knowledge/bases/${knowledgeBaseId}/share`,
       { user_id: userId, permission }
     ),
   
   updatePermission: (knowledgeBaseId: string, userId: string, permission: string) =>
     api.put<ApiResponse<KnowledgeBasePermission>>(
-      `/api/knowledge-bases/${knowledgeBaseId}/permissions/${userId}`,
+      `/api/knowledge/bases/${knowledgeBaseId}/permissions/${userId}`,
       { permission }
     ),
   
   removePermission: (knowledgeBaseId: string, userId: string) =>
-    api.delete<ApiResponse<void>>(`/api/knowledge-bases/${knowledgeBaseId}/permissions/${userId}`),
+    api.delete<ApiResponse<void>>(`/api/knowledge/bases/${knowledgeBaseId}/permissions/${userId}`),
 };
 
 // 智能体相关 API

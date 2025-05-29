@@ -99,7 +99,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        const contentType = document.metadata.content_type || 'text/plain';
+        const contentType = document.content_type || 'text/plain';
 
         if (IMAGE_TYPES.includes(contentType) || VIDEO_TYPES.includes(contentType) || contentType === 'application/pdf') {
           const blob = await response.blob();
@@ -122,7 +122,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           setContent(text);
         }
       } else {
-        setContent(document.content);
+        setContent('No content available');
       }
     } catch (error) {
       setError('Failed to load document content');
@@ -150,7 +150,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         const url = window.URL.createObjectURL(blob);
         const a = window.document.createElement('a');
         a.href = url;
-        a.download = document.metadata.filename || 'document';
+        a.download = document.name || 'document';
         window.document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -208,7 +208,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       );
     }
 
-    const contentType = document.metadata.content_type || 'text/plain';
+    const contentType = document.content_type || 'text/plain';
 
     if (!SUPPORTED_PREVIEW_TYPES.includes(contentType)) {
       return (
@@ -223,7 +223,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         <Box position="relative">
           <Image
             src={previewUrl}
-            alt={document.metadata.filename}
+            alt={document.name}
             maxH="400px"
             objectFit="contain"
             borderRadius="md"
@@ -260,7 +260,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             width="100%"
             height="100%"
             style={{ border: 'none' }}
-            title={document.metadata.filename}
+            title={document.name}
           />
         </Box>
       );
@@ -274,7 +274,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             width="100%"
             height="100%"
             style={{ border: 'none' }}
-            title={document.metadata.filename}
+            title={document.name}
           />
         </Box>
       );
@@ -322,13 +322,13 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       <VStack spacing={4} align="stretch">
         <HStack justify="space-between">
           <VStack align="start" spacing={1}>
-            <Text fontWeight="bold">{document.metadata.filename}</Text>
+            <Text fontWeight="bold">{document.name}</Text>
             <HStack spacing={2}>
               <Badge colorScheme="blue">
-                {document.metadata.content_type || 'text/plain'}
+                {document.content_type || 'text/plain'}
               </Badge>
               <Text fontSize="sm" color="gray.500">
-                {new Date(document.metadata.created_at).toLocaleString()}
+                {new Date(document.created_at).toLocaleString()}
               </Text>
             </HStack>
           </VStack>
@@ -357,13 +357,13 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       <Modal isOpen={isOpen} onClose={onClose} size="full">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{document.metadata.filename}</ModalHeader>
+          <ModalHeader>{document.name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {IMAGE_TYPES.includes(document.metadata.content_type || '') && previewUrl && (
+            {IMAGE_TYPES.includes(document.content_type || '') && previewUrl && (
               <Image
                 src={previewUrl}
-                alt={document.metadata.filename}
+                alt={document.name}
                 maxH="90vh"
                 objectFit="contain"
               />

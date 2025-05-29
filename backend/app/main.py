@@ -22,8 +22,9 @@ app.add_middleware(
 )
 
 # Import and include routers
-from app.api import chat, knowledge, agents, settings, billing
+from app.api import auth, chat, knowledge, agents, settings, billing
 
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(knowledge.router, prefix="/api/knowledge", tags=["knowledge"])
 app.include_router(agents.router, prefix="/api/agents", tags=["agents"])

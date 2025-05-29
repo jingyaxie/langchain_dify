@@ -13,13 +13,15 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
-  Badge,
-  Link,
-  IconButton,
 } from '@chakra-ui/react';
-import { FiSearch, FiDownload, FiTrash2 } from 'react-icons/fi';
-import { Document } from '../types';
+import { FiSearch } from 'react-icons/fi';
 import { knowledgeApi } from '../services/api';
+
+interface SearchResultItem {
+  content: string;
+  metadata: any;
+  score: number;
+}
 
 interface KnowledgeSearchProps {
   collectionName: string;
@@ -29,7 +31,7 @@ export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
   collectionName,
 }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Document[]>([]);
+  const [results, setResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
@@ -38,9 +40,26 @@ export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
 
     setIsLoading(true);
     try {
-      const searchResults = await knowledgeApi.search(collectionName, query);
-      setResults(searchResults);
+      const response = await knowledgeApi.search({
+        knowledge_base_id: collectionName,
+        query: query,
+        limit: 10
+      });
+      console.log('Search response:', response.data);
+      
+      // 处理后端返回的数据格式
+      const rawResults = response.data.data.results || [];
+      
+      // 转换为期望的格式
+      const formattedResults: SearchResultItem[] = rawResults.map((result: any) => ({
+        content: result.content || result.page_content || '',
+        metadata: result.metadata || {},
+        score: result.score || 1.0
+      }));
+      
+      setResults(formattedResults);
     } catch (error) {
+      console.error('Search error:', error);
       toast({
         title: 'Error',
         description: 'Failed to search knowledge base',
@@ -50,51 +69,6 @@ export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDownload = async (document: Document) => {
-    try {
-      const response = await fetch(document.url);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = document.metadata.filename || 'document';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to download document',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const handleDelete = async (document: Document) => {
-    try {
-      await knowledgeApi.deleteDocument(collectionName, document.id);
-      setResults((prev) => prev.filter((doc) => doc.id !== document.id));
-      toast({
-        title: 'Success',
-        description: 'Document deleted successfully',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete document',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
     }
   };
 
@@ -124,14 +98,16 @@ export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
         )}
 
         <Accordion allowMultiple>
-          {results.map((document) => (
-            <AccordionItem key={document.id}>
+          {results.map((result, index) => (
+            <AccordionItem key={index}>
               <h2>
                 <AccordionButton>
                   <Box flex="1" textAlign="left">
-                    <Text fontWeight="bold">{document.metadata.filename}</Text>
+                    <Text fontWeight="bold">
+                      {result.metadata?.filename || `Result ${index + 1}`}
+                    </Text>
                     <Text fontSize="sm" color="gray.500">
-                      {new Date(document.metadata.created_at).toLocaleString()}
+                      Score: {result.score?.toFixed(2) || 'N/A'}
                     </Text>
                   </Box>
                   <AccordionIcon />
@@ -143,40 +119,26 @@ export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
                     <Text fontWeight="bold" mb={2}>
                       Content:
                     </Text>
-                    <Text>{document.content}</Text>
+                    <Text whiteSpace="pre-wrap">{result.content}</Text>
                   </Box>
 
-                  <Box>
-                    <Text fontWeight="bold" mb={2}>
-                      Metadata:
-                    </Text>
-                    <VStack align="stretch" spacing={2}>
-                      {Object.entries(document.metadata).map(([key, value]) => (
-                        <HStack key={key} justify="space-between">
-                          <Text fontSize="sm" color="gray.600">
-                            {key}:
-                          </Text>
-                          <Text fontSize="sm">{value}</Text>
-                        </HStack>
-                      ))}
-                    </VStack>
-                  </Box>
-
-                  <HStack justify="flex-end" spacing={2}>
-                    <IconButton
-                      aria-label="Download document"
-                      icon={<FiDownload />}
-                      size="sm"
-                      onClick={() => handleDownload(document)}
-                    />
-                    <IconButton
-                      aria-label="Delete document"
-                      icon={<FiTrash2 />}
-                      size="sm"
-                      colorScheme="red"
-                      onClick={() => handleDelete(document)}
-                    />
-                  </HStack>
+                  {result.metadata && Object.keys(result.metadata).length > 0 && (
+                    <Box>
+                      <Text fontWeight="bold" mb={2}>
+                        Metadata:
+                      </Text>
+                      <VStack align="stretch" spacing={2}>
+                        {Object.entries(result.metadata).map(([key, value]) => (
+                          <HStack key={key} justify="space-between">
+                            <Text fontSize="sm" color="gray.600">
+                              {key}:
+                            </Text>
+                            <Text fontSize="sm">{String(value)}</Text>
+                          </HStack>
+                        ))}
+                      </VStack>
+                    </Box>
+                  )}
                 </VStack>
               </AccordionPanel>
             </AccordionItem>
@@ -185,7 +147,13 @@ export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
 
         {!isLoading && results.length === 0 && query && (
           <Text textAlign="center" color="gray.500">
-            No results found
+            No results found for "{query}"
+          </Text>
+        )}
+
+        {!isLoading && results.length > 0 && (
+          <Text textAlign="center" color="gray.600" fontSize="sm">
+            Found {results.length} result(s)
           </Text>
         )}
       </VStack>

@@ -137,7 +137,7 @@ export class ModelConfigManager {
       case 'azure':
         return [
           providerConfig.DEFAULT_MODEL || '',
-          providerConfig.EMBEDDING_MODEL || '',
+          'EMBEDDING_MODEL' in providerConfig ? providerConfig.EMBEDDING_MODEL || '' : '',
         ].filter(Boolean);
       case 'anthropic':
         return [
