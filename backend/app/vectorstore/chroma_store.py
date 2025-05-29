@@ -84,13 +84,24 @@ class ChromaStore:
         chunk_size = chunk_size or self.default_chunk_size
         chunk_overlap = chunk_overlap or self.default_chunk_overlap
         
+        print(f"\nCreating text splitter with configuration:")
+        print(f"Type: {splitter_type}")
+        print(f"Chunk size: {chunk_size}")
+        print(f"Chunk overlap: {chunk_overlap}")
+        print(f"Length function: {length_function}")
+        print(f"Keep separator: {keep_separator}")
+        print(f"Add start index: {add_start_index}")
+        print(f"Strip whitespace: {strip_whitespace}")
+        
         # 解析自定义分隔符
         separators = None
         if custom_separators:
             try:
                 separators = [sep.strip() for sep in custom_separators.split(',') if sep.strip()]
+                print(f"Custom separators: {separators}")
             except:
                 separators = None
+                print("Failed to parse custom separators")
         
         # 根据分割器类型创建相应的文本分割器
         if splitter_type == "recursive":
@@ -227,15 +238,24 @@ class ChromaStore:
             for i, text in enumerate(texts):
                 # Skip empty texts
                 if not text or not text.strip():
+                    print(f"Skipping empty text at index {i}")
                     continue
+                
+                print(f"\nProcessing text {i+1}/{len(texts)}")
+                print(f"Original text length: {len(text)} characters")
                 
                 # Apply cleaning rules if specified
                 original_text = text
                 if cleaning_rules:
                     text = self._apply_cleaning_rules(text, cleaning_rules)
+                    print(f"Text length after cleaning: {len(text)} characters")
+                    print(f"Applied cleaning rules: {cleaning_rules}")
                     
                 # Split text into chunks
                 chunks = text_splitter.split_text(text)
+                print(f"Split into {len(chunks)} chunks")
+                print(f"Chunk sizes: {[len(chunk) for chunk in chunks]}")
+                
                 all_chunks.extend(chunks)
                 
                 # Prepare metadata for each chunk

@@ -188,4 +188,31 @@ class KnowledgeService:
             return self.vector_store.get_document_chunks(collection_name, document_filename)
         except Exception as e:
             print(f"Error getting document chunks for {document_filename}: {str(e)}")
+            raise e
+    
+    def get_document_chunks_paginated(self, collection_name: str, document_filename: str, 
+                                    page: int = 1, page_size: int = 20):
+        """获取指定文档的分段（分页）"""
+        try:
+            # 获取所有分段
+            all_chunks = self.vector_store.get_document_chunks(collection_name, document_filename)
+            
+            # 计算分页
+            total_chunks = len(all_chunks)
+            start_idx = (page - 1) * page_size
+            end_idx = start_idx + page_size
+            
+            # 获取当前页的分段
+            chunks = all_chunks[start_idx:end_idx]
+            
+            # 构建返回结果
+            return {
+                "chunks": chunks,
+                "total": total_chunks,
+                "page": page,
+                "page_size": page_size,
+                "pages": (total_chunks + page_size - 1) // page_size
+            }
+        except Exception as e:
+            print(f"Error getting paginated document chunks for {document_filename}: {str(e)}")
             raise e 
